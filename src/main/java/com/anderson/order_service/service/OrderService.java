@@ -1,10 +1,13 @@
 package com.anderson.order_service.service;
 
+import java.time.Instant;
+
 import org.springframework.stereotype.Service;
 
 import com.anderson.order_service.domain.entity.Order;
 import com.anderson.order_service.domain.repository.OrderRepository;
 import com.anderson.order_service.dto.OrderRequest;
+import com.anderson.order_service.messaging.dto.OrderCreatedEvent;
 import com.anderson.order_service.messaging.producer.OrderProducer;
 
 @Service
@@ -25,7 +28,11 @@ public class OrderService {
 
         Order saved = repository.save(order);
 
-        producer.sendOrderCreated(saved.getId().toString());
+        OrderCreatedEvent event = new OrderCreatedEvent(
+                saved.getId(),
+                Instant.now());
+
+        producer.sendOrderCreated(event);
 
         return saved;
     }
